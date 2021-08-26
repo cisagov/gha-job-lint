@@ -2,12 +2,19 @@
 name: "GHA Lint Job"
 description: "Run linting on a project repository."
 
-env:
-  CURL_CACHE_DIR: ~/.cache/curl
-  PIP_CACHE_DIR: ~/.cache/pip
-  PRE_COMMIT_CACHE_DIR: ~/.cache/pre-commit
-
 inputs:
+  cache-dir-curl:
+    default: "~/.cache/curl"
+    description: "The cache directory for curl."
+    required: false
+  cache-dir-pip:
+    default: "~/.cache/pip"
+    description: "The cache directory for pip."
+    required: false
+  cache-dir-pre-commit:
+    default: "~/.cache/pre-commit"
+    description: "The cache directory for pre-commit."
+    required: false
   go-version:
     default: "1.16"
     description: "The version of golang to install."
@@ -69,9 +76,9 @@ runs:
         # update is required. That behavior defeats the benefits of caching.
         # so there is no point in doing it for the .terraform directory.
         path: |
-          ${{ env.PIP_CACHE_DIR }}
-          ${{ env.PRE_COMMIT_CACHE_DIR }}
-          ${{ env.CURL_CACHE_DIR }}
+          ${{ inputs.cache-dir-pip }}
+          ${{ inputs.cache-dir-pre-commit }}
+          ${{ inputs.cache-dir-curl }}
           ${{ steps.go-cache.outputs.dir }}
         key: "${{ env.BASE_CACHE_KEY }}\
           ${{ hashFiles('**/requirements-test.txt') }}-\
@@ -80,18 +87,18 @@ runs:
         restore-keys: |
           ${{ env.BASE_CACHE_KEY }}
     - name: Setup curl cache
-      run: mkdir -p ${{ env.CURL_CACHE_DIR }}
+      run: mkdir -p ${{ inputs.cache-dir-curl }}
       shell: bash
     - name: Install Packer
       run: |
         PACKER_ZIP="packer_${{ inputs.packer-version }}_linux_amd64.zip"
-        curl --output ${{ env.CURL_CACHE_DIR }}/"${PACKER_ZIP}" \
-          --time-cond ${{ env.CURL_CACHE_DIR }}/"${PACKER_ZIP}" \
+        curl --output ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}" \
+          --time-cond ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}" \
           --location \
           "https://releases.hashicorp.com/packer/"\
           "${{ inputs.packer-version }}/${PACKER_ZIP}"
         sudo unzip -d /opt/packer \
-          ${{ env.CURL_CACHE_DIR }}/"${PACKER_ZIP}"
+          ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}"
         sudo mv /usr/local/bin/packer /usr/local/bin/packer-default
         sudo ln -s /opt/packer/packer /usr/local/bin/packer
       shell: bash
