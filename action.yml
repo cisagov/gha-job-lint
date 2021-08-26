@@ -90,17 +90,21 @@ runs:
       run: mkdir -p ${{ inputs.cache-dir-curl }}
       shell: bash
     - name: Install Packer
+      # Because of how GitHub Actions processes multiline strings we cannot
+      # break the file URL for curl across multiple lines. We need to disable
+      # the line-lenth check for this property as a result.
+      # yamllint disable rule:line-length
       run: |
         PACKER_ZIP="packer_${{ inputs.packer-version }}_linux_amd64.zip"
         curl --output ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}" \
           --time-cond ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}" \
           --location \
-          "https://releases.hashicorp.com/packer/"\
-          "${{ inputs.packer-version }}/${PACKER_ZIP}"
+          "https://releases.hashicorp.com/packer/${{ inputs.packer-version }}/${PACKER_ZIP}"
         sudo unzip -d /opt/packer \
           ${{ inputs.cache-dir-curl }}/"${PACKER_ZIP}"
         sudo mv /usr/local/bin/packer /usr/local/bin/packer-default
         sudo ln -s /opt/packer/packer /usr/local/bin/packer
+      # yamllint enable
       shell: bash
     - uses: hashicorp/setup-terraform@v1
       with:
