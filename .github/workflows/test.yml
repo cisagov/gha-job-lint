@@ -19,5 +19,7 @@ jobs:
       - uses: cisagov/gha-job-lint@first-commits
         with:
           packer-version: ${{ env.PACKER_VERSION }}
-          run-tmate: ${{ env.RUN_TMATE}}
           terraform-version: ${{ env.TERRAFORM_VERSION }}
+      - name: Setup tmate debug session
+        uses: mxschmitt/action-tmate@v3
+        if: env.RUN_TMATE
