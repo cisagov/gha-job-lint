@@ -1,0 +1,23 @@
+---
+name: test
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [apb]
+
+env:
+  RUN_TMATE: ${{ secrets.RUN_TMATE }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cisagov/setup-env-github-action@develop
+      - uses: actions/checkout@v2
+      - uses: cisagov/gha-job-lint@first-commits
+        with:
+          packer-version: ${{ env.PACKER_VERSION }}
+          run-tmate: ${{ env.RUN_TMATE}}
+          terraform-version: ${{ env.TERRAFORM_VERSION }}
